@@ -99,11 +99,87 @@ def reduce_grayscale_shades(image, num_shades):
     return reduced_image
 
 
-num_shades = 2
+num_shades = 4
 reduced_gray_image = reduce_grayscale_shades(colored_image, num_shades)
 
 plot_images(["Original", f"Reduced to {num_shades} shades"], [colored_image, cv2.merge([reduced_gray_image,
                                                                                         reduced_gray_image,
                                                                                         reduced_gray_image])])
+
+
+"""
+ex 7
+"""
+
+
+def floyd_steinberg_dithering(image, num_shades):
+    grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Rescale grayscale to range 0-255
+    height, width = grayscale.shape
+    new_image = np.copy(grayscale)
+
+    # Scaling the shades to be between 0 and the number of shades
+    scale_factor = 255 // (num_shades - 1)
+
+    for y in range(height):
+        for x in range(width):
+            old_pixel = new_image[y, x]
+            new_pixel = np.round(old_pixel / scale_factor) * scale_factor
+            new_image[y, x] = new_pixel
+            quant_error = old_pixel - new_pixel
+
+            # Floyd-Steinberg error diffusion
+            if x + 1 < width:
+                new_image[y, x + 1] += quant_error * 7 / 16
+            if y + 1 < height:
+                if x - 1 >= 0:
+                    new_image[y + 1, x - 1] += quant_error * 3 / 16
+                new_image[y + 1, x] += quant_error * 5 / 16
+                if x + 1 < width:
+                    new_image[y + 1, x + 1] += quant_error * 1 / 16
+
+    return np.clip(new_image, 0, 255).astype(np.uint8)
+
+
+def stucki_dithering(image, num_shades):
+    grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Rescale grayscale to range 0-255
+    height, width = grayscale.shape
+    new_image = np.copy(grayscale)
+
+    # Scaling the shades to be between 0 and the number of shades
+    scale_factor = 255 // (num_shades - 1)
+
+    for y in range(height):
+        for x in range(width):
+            old_pixel = new_image[y, x]
+            new_pixel = np.round(old_pixel / scale_factor) * scale_factor
+            new_image[y, x] = new_pixel
+            quant_error = old_pixel - new_pixel
+
+            # Stucki error diffusion
+            diffusion_matrix = [
+                [0, 0, 0, 8 / 42, 4 / 42],
+                [2 / 42, 4 / 42, 8 / 42, 4 / 42, 2 / 42],
+                [1 / 42, 2 / 42, 4 / 42, 2 / 42, 1 / 42],
+            ]
+
+            for i in range(3):
+                for j in range(-2, 3):
+                    if 0 <= y + i < height and 0 <= x + j < width:
+                        new_image[y + i, x + j] += quant_error * diffusion_matrix[i][j + 2]
+
+    return np.clip(new_image, 0, 255).astype(np.uint8)
+
+
+plot_images(["Original", "Floyd-Steinberg Dithering", "Stucki Dithering"],
+            [colored_image, cv2.merge([floyd_steinberg_dithering(colored_image, 4),
+                                       floyd_steinberg_dithering(colored_image, 4),
+                                       floyd_steinberg_dithering(colored_image, 4)]),
+             cv2.merge([stucki_dithering(colored_image, 4),
+                        stucki_dithering(colored_image, 4),
+                        stucki_dithering(colored_image, 4)])])
 
 
