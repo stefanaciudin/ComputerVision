@@ -19,7 +19,7 @@ def rgb_skin_detection(image):
 def hsv_skin_detection(image):
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     skin_mask = (
-            (hsv_image[:, :, 0] >= 0) & (hsv_image[:, :, 0] <= 50) &
+            (hsv_image[:, :, 0] >= 0) & (hsv_image[:, :, 0] <= 25) &
             (hsv_image[:, :, 1] >= 0.23 * 255) & (hsv_image[:, :, 1] <= 0.68 * 255) &
             (hsv_image[:, :, 2] >= 0.35 * 255) & (hsv_image[:, :, 2] <= 255)
     )
@@ -163,7 +163,7 @@ def evaluate_pratheepan_dataset(dataset_path, ground_truth_path):
 dataset_path = "lab3/b/Pratheepan_Dataset/FacePhoto"
 ground_truth_path = "lab3/b/Ground_Truth/GroundT_FacePhoto"
 
-#evaluate_pratheepan_dataset(dataset_path, ground_truth_path)
+evaluate_pratheepan_dataset(dataset_path, ground_truth_path)
 
 
 def find_face_bounding_box(image, skin_mask):
