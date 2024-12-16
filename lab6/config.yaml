@@ -1,0 +1,6 @@
+path:  C:/Users/stefa/ComputerVision/lab6
+train: train/images
+val: test/images
+
+nc: 2
+names: ['car', 'minivan']
